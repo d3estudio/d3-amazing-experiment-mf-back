@@ -10,28 +10,27 @@ router.post('/', loginMiddleware, async (req, res) => {
   const app_id = process.env.KEY;
   const authToken = `${Buffer.from(app_id, 'binary').toString('base64')}:${secret}`;
   const { email, password } = req.body;
+  const params = new URLSearchParams();
+
+
+  params.append('app_id', `${app_id}`);
+  params.append('email', `${email}`);
+  params.append('password', `${password}`);
+  params.append('signature', `${toSha1(`email=${email}&password=${password}`)}`);
 
   function toSha1(data) {
     const toHash = `app_id=${app_id}&${data}${app_id}${secret}`;
-    return sha1(encodeURIComponent(toHash));
+    return sha1(toHash);
   }
 
-  const sendData = {
-    app_id,
-    email,
-    password,
-    signature: toSha1(`email=${email}&password=${password}`)
-  }
-
-  await axios.post(`${process.env.BASE_URL}/oauth/token`, sendData, {
+  await axios.post(`${process.env.BASE_URL}/oauth/token`, params, {
     headers: {
       Authorization: `Bearer ${authToken}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/x-www-form-urlencoded"
     }
   })
   .then(response => {
-    console.log(response.data);
-    return res.sendStatus(200);
+    return res.status(200).send(response.data);
   })
   .catch(error => {
     console.log(error.response.data);
