@@ -5,7 +5,7 @@ const loginMiddleware = require('../middlewares/loginMiddleware');
 
 const router = express.Router();
 
-router.post('/', loginMiddleware, async (req, res) => {
+router.post('/', loginMiddleware, (req, res) => {
   const secret = process.env.SECRET;
   const app_id = process.env.KEY;
   const authToken = `${Buffer.from(app_id, 'binary').toString('base64')}:${secret}`;
@@ -23,7 +23,7 @@ router.post('/', loginMiddleware, async (req, res) => {
     return sha1(toHash);
   }
 
-  await axios.post(`${process.env.BASE_URL}/oauth/token`, params, {
+  axios.post(`${process.env.BASE_URL}/oauth/token`, params, {
     headers: {
       Authorization: `Bearer ${authToken}`,
       "Content-Type": "application/x-www-form-urlencoded"
